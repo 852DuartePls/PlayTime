@@ -1,12 +1,13 @@
 name: PlayTime
-author: F64_Rx
+authors: [F64_Rx, DaveDuart]
 version: ${project.version}
 description: allows player to see how much they have played for.
-main: me.f64.playtime.Main
+main: me.f64.playtime.PlayTime
 depend: [PlaceholderAPI]
+api-version: '1.21'
 
 commands:
   playtime:
     usage: /<command>
     aliases: [timeplayed, pt]
-    description: Main command for Playtime!
+    description: PlayTime command for PlaytimeCommands!
