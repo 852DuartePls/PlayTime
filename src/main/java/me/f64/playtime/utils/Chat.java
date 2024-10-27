@@ -47,10 +47,7 @@ public class Chat {
             return Integer.parseInt(playerJson.get("time").toString()) + sessionOnTime;
         } catch (Exception e) {
             e.printStackTrace();
-            if (!Compatibility.IS_LEGACY) {
-                return player.getStatistic(Statistic.valueOf("PLAY_ONE_MINUTE")) / 20;
-            }
-            return player.getStatistic(Statistic.valueOf("PLAY_ONE_TICK")) / 20;
+            return player.getStatistic(Statistic.valueOf("PLAY_ONE_MINUTE")) / 20;
         }
     }
 

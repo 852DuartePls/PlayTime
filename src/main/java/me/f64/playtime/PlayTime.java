@@ -23,7 +23,6 @@ import org.json.simple.parser.JSONParser;
 import me.f64.playtime.commands.PlaytimeCommands;
 import me.f64.playtime.placeholderapi.Expansion;
 import me.f64.playtime.utils.Chat;
-import me.f64.playtime.utils.UpdateChecker;
 
 public class PlayTime extends JavaPlugin implements Listener {
     public static Plugin plugin;
@@ -41,17 +40,6 @@ public class PlayTime extends JavaPlugin implements Listener {
         }
         checkStorage();
         placeholderAPI();
-        updateChecker();
-    }
-
-    private void updateChecker() {
-        new UpdateChecker(this, 26016).getVersion(version -> {
-            if (getDescription().getVersion().equalsIgnoreCase(version)) {
-                Chat.console("&7[PlayTime] Latest version is &ainstalled&7! - v" + getDescription().getVersion());
-            } else {
-                Chat.console("&7[PlayTime] Latest version is &cnot installed&7! - v" + version);
-            }
-        });
     }
 
     private void placeholderAPI() {
