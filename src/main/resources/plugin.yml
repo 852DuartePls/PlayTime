@@ -1,11 +1,11 @@
-name: PlayTime
+name: ${name}
 authors: [F64_Rx, DaveDuart]
-version: ${project.version}
-description: allows player to see how much they have played for.
+version: v${version}
+description: ${description}
 main: me.f64.playtime.PlayTime
-depend: [PlaceholderAPI]
-api-version: '1.21'
+api-version: ${apiVersion}
 
+depend: [PlaceholderAPI]
 commands:
   playtime:
     usage: /<command>

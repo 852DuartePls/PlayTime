@@ -4,6 +4,7 @@ plugins {
 
 group = 'me.f64'
 version = '3.8'
+description = 'Allows player to see how much they have played for.'
 
 repositories {
     mavenCentral()
@@ -32,19 +33,17 @@ tasks {
         options.encoding = 'UTF-8'
         options.release = 21
     }
-
     processResources {
         filteringCharset = 'UTF-8'
-        inputs.property('version', project.version)
-        inputs.property('name', project.name)
-        inputs.property('apiVersion', '1.21')
-
+        def props = [
+                name: project.name,
+                version: project.version,
+                description: project.description,
+                apiVersion: '1.21'
+        ]
+        inputs.properties(props)
         filesMatching('plugin.yml') {
-            expand(
-                    version: project.version,
-                    name: project.name,
-                    apiVersion: '1.21'
-            )
+            expand(props)
         }
     }
 }
