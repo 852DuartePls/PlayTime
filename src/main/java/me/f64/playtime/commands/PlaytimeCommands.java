@@ -1,147 +1,131 @@
 package me.f64.playtime.commands;
 
-import java.io.File;
-import java.io.FileReader;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-
 import me.f64.playtime.PlayTime;
-import me.f64.playtime.utils.ConfigWrapper;
-import me.f64.playtime.utils.TimeFormat;
-import me.f64.playtime.utils.TopPlayers;
-
+import me.f64.playtime.utils.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import me.f64.playtime.utils.Chat;
+import org.jetbrains.annotations.NotNull;
+
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 public class PlaytimeCommands implements TabExecutor {
-    static PlayTime plugin;
+    private static PlayTime plugin;
+    private static DataStorage dataStorage;
     public static ConfigWrapper config;
 
-    public PlaytimeCommands(PlayTime instance) {
+    public PlaytimeCommands(PlayTime instance, DataStorage dataStorage) {
         plugin = instance;
         PlaytimeCommands.config = new ConfigWrapper(instance, null, "config.yml");
+        PlaytimeCommands.dataStorage = dataStorage;
         PlaytimeCommands.config.createFile(null,
-                "PlaytimeCommands By F64_Rx - Need Help? PM me on Spigot or post in the discussion.\r\n" + "\r\n"
-                        + " =================\r\n" + " | CONFIGURATION |\r\n" + " =================\r\n" + "\r\n"
-                        + " available placeholders\r\n" + " %playtime_player% - returns the player name\r\n"
-                        + " %offlineplayer% - returns the offline player name\r\n"
-                        + " %offlinetime% - shows offline time of a player\r\n"
-                        + " %offlinetimesjoined% - shows the amount of joins a player has had\r\n"
-                        + " %playtime_time% - shows time played\r\n"
-                        + " %playtime_timesjoined% - shows the amount of times the player has joined the server\r\n"
-                        + " %playtime_serveruptime% - shows the uptime of the server\r\n"
-                        + " %playtime_position% - shows the players current position\r\n"
-                        + " %playtime_top_#_name% - shows the name of the top 10\r\n"
-                        + " %playtime_top_#_time% - shows the time of the top 10\r\n"
-                        + " You can also use any other placeholder that PlaceholderAPI supports :) \r\n" + "");
-        FileConfiguration c = PlaytimeCommands.config.getConfig();
-        c.addDefault("time.second.enabled", true);
-        c.addDefault("time.second.prefix", "s");
-        c.addDefault("time.minute.enabled", true);
-        c.addDefault("time.minute.prefix", "m");
-        c.addDefault("time.hour.enabled", true);
-        c.addDefault("time.hour.prefix", "h");
-        c.addDefault("time.day.enabled", true);
-        c.addDefault("time.day.prefix", "d");
-        c.addDefault("time.week.enabled", true);
-        c.addDefault("time.week.prefix", "w");
-        c.addDefault("messages.no_permission", Arrays.asList("&8[&bPlayTime&8] &cYou don't have permission."));
-        c.addDefault("messages.doesnt_exist",
-                Arrays.asList("&8[&bPlayTime&8] &cPlayer %offlineplayer% has not joined before!"));
-        c.addDefault("messages.player", Arrays.asList("&b%playtime_player%'s Stats are:",
-                "&bPlayTime: &7%playtime_time%", "&bTimes Joined: &7%playtime_timesjoined%"));
-        c.addDefault("messages.offline_players", Arrays.asList("&b%offlineplayer%'s Stats are:",
-                "&bPlayTime: &7%offlinetime%", "&bTimes Joined: &7%offlinetimesjoined%"));
-        c.addDefault("messages.other_players", Arrays.asList("&b%playtime_player%'s Stats are:",
-                "&bPlayTime: &7%playtime_time%", "&bTimes Joined: &7%playtime_timesjoined%"));
-        c.addDefault("messages.playtimetop.header", Arrays.asList("&bTop &e10 &bplayers playtime:", ""));
-        c.addDefault("messages.playtimetop.message", Arrays.asList("&a%position%. &b%player%: &e%playtime%"));
-        c.addDefault("messages.playtimetop.footer", Arrays.asList(""));
-        c.addDefault("messages.server_uptime",
-                Arrays.asList("&8[&bPlayTime&8] &bServer's total uptime is %playtime_serveruptime%"));
-        c.addDefault("messages.reload_config",
-                Arrays.asList("&8[&bPlayTime&8] &bYou have successfully reloaded the config."));
-        c.addDefault("placeholder.top.name", "none");
-        c.addDefault("placeholder.top.time", "-");
-        c.options().copyDefaults(true);
+                """
+                        # PlaytimeCommands By F64_Rx - Need Help? PM me on Spigot or post in the discussion.\r
+                        \r
+                        #     =================\r
+                        #     | CONFIGURATION |\r
+                        #     =================\r
+                        \r
+                        #    available placeholders\r
+                        #    %playtime_player% - returns the player name\r
+                        #    %offlineplayer% - returns the offline player name\r
+                        #    %offlinetime% - shows offline time of a player\r
+                        #    %offlinetimesjoined% - shows the amount of joins a player has had\r
+                        #    %playtime_time% - shows time played\r
+                        #    %playtime_timesjoined% - shows the amount of times the player has joined the server\r
+                        #    %playtime_serveruptime% - shows the uptime of the server\r
+                        #    %playtime_position% - shows the players current position\r
+                        #    %playtime_top_#_name% - shows the name of the top 10\r
+                        #    %playtime_top_#_time% - shows the time of the top 10\r
+                        #    You can also use any other placeholder that PlaceholderAPI supports :) \r
+                        """);
+        FileConfiguration fileConfig = PlaytimeCommands.config.getConfig();
+        fileConfig.addDefault("time.second.enabled", true);
+        fileConfig.addDefault("time.second.prefix", "s");
+        fileConfig.addDefault("time.minute.enabled", true);
+        fileConfig.addDefault("time.minute.prefix", "m");
+        fileConfig.addDefault("time.hour.enabled", true);
+        fileConfig.addDefault("time.hour.prefix", "h");
+        fileConfig.addDefault("time.day.enabled", true);
+        fileConfig.addDefault("time.day.prefix", "d");
+        fileConfig.addDefault("time.week.enabled", true);
+        fileConfig.addDefault("time.week.prefix", "w");
+        fileConfig.addDefault("messages.no_permission", List.of("&8[&bPlayTime&8] &cYou don't have permission."));
+        fileConfig.addDefault("messages.doesnt_exist", List.of("&8[&bPlayTime&8] &cPlayer %offlineplayer% has not joined before!"));
+        fileConfig.addDefault("messages.player", Arrays.asList("&b%playtime_player%'s Stats are:", "&bPlayTime: &7%playtime_time%", "&bTimes Joined: &7%playtime_timesjoined%"));
+        fileConfig.addDefault("messages.offline_players", Arrays.asList("&b%offlineplayer%'s Stats are:", "&bPlayTime: &7%offlinetime%", "&bTimes Joined: &7%offlinetimesjoined%"));
+        fileConfig.addDefault("messages.other_players", Arrays.asList("&b%playtime_player%'s Stats are:", "&bPlayTime: &7%playtime_time%", "&bTimes Joined: &7%playtime_timesjoined%"));
+        fileConfig.addDefault("messages.playtimetop.header", Arrays.asList("&bTop &e10 &bplayers playtime:", ""));
+        fileConfig.addDefault("messages.playtimetop.message", List.of("&a%position%. &b%player%: &e%playtime%"));
+        fileConfig.addDefault("messages.playtimetop.footer", List.of(""));
+        fileConfig.addDefault("messages.server_uptime", List.of("&8[&bPlayTime&8] &bServer's total uptime is %playtime_serveruptime%"));
+        fileConfig.addDefault("messages.reload_config", List.of("&8[&bPlayTime&8] &bYou have successfully reloaded the config."));
+        fileConfig.addDefault("placeholder.top.name", "none");
+        fileConfig.addDefault("placeholder.top.time", "-");
+        fileConfig.options().copyDefaults(true);
         PlaytimeCommands.config.saveConfig();
     }
 
     public String getPlayerTime(String name) {
-        JSONParser jsonParser = new JSONParser();
+        Player player = plugin.getServer().getPlayer(name);
+        if (player != null) {
+            UUID playerUUID = player.getUniqueId();
+            DataStorage.PlayerData playerData = dataStorage.loadPlayerData(playerUUID);
+            return playerData != null ? String.valueOf(playerData.playTime()) : null;
+        }
+
         try {
-            FileReader reader = new FileReader(plugin.getPlayerPath(name));
-            JSONObject player = (JSONObject) jsonParser.parse(reader);
-            reader.close();
-            return player.get("time").toString();
-        } catch (Exception e) {
-            e.printStackTrace();
+            UUID playerUUID = UUID.fromString(name);
+            DataStorage.PlayerData playerData = dataStorage.loadPlayerData(playerUUID);
+            return playerData != null ? String.valueOf(playerData.playTime()) : null;
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Invalid UUID format for player " + name);
         }
         return null;
     }
 
     public String getPlayerJoins(String name) {
-        JSONParser jsonParser = new JSONParser();
+        Player player = plugin.getServer().getPlayer(name);
+        if (player != null) {
+            UUID playerUUID = player.getUniqueId();
+            DataStorage.PlayerData playerData = dataStorage.loadPlayerData(playerUUID);
+            return playerData != null ? String.valueOf(playerData.joins()) : null;
+        }
+
         try {
-            FileReader reader = new FileReader(plugin.getPlayerPath(name));
-            JSONObject player = (JSONObject) jsonParser.parse(reader);
-            reader.close();
-            return player.get("joins").toString();
-        } catch (Exception e) {
-            e.printStackTrace();
+            UUID playerUUID = UUID.fromString(name);
+            DataStorage.PlayerData playerData = dataStorage.loadPlayerData(playerUUID);
+            return playerData != null ? String.valueOf(playerData.joins()) : null;
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Invalid UUID format for player " + name);
         }
         return null;
     }
 
-    public static TopPlayers[] getTopTen() {
-        TopPlayers[] topTen = {};
-        try {
-            JSONParser jsonParser = new JSONParser();
+    public static TopPlayers @NotNull [] getTopTen() {
+        List<DataStorage.PlayerData> allPlayers = dataStorage.loadAllPlayerData();
+        List<TopPlayers> topPlayersList = new ArrayList<>();
 
-            File dir = new File(plugin.storagePath);
-
-            File[] fileList = dir.listFiles();
-
-            if (fileList != null) {
-                ArrayList<TopPlayers> allPlayers = new ArrayList<>();
-
-                for (File jsonFile : fileList) {
-                    FileReader reader = new FileReader(jsonFile);
-                    JSONObject player = (JSONObject) jsonParser.parse(reader);
-                    reader.close();
-
-                    allPlayers.add(new TopPlayers(player.get("lastName").toString(), player.get("uuid").toString(),
-                            Integer.parseInt(player.get("time").toString())));
-                }
-
-                allPlayers.sort(Comparator.comparing(e -> e.time));
-                Collections.reverse(allPlayers);
-
-                int len = Math.min(allPlayers.size(), 10);
-                topTen = new TopPlayers[len];
-                topTen[0] = allPlayers.get(0);
-
-                for (int i = 0; i < len; ++i) {
-                    topTen[i] = allPlayers.get(i);
-                }
-            }
-            return topTen;
-        } catch (Exception e) {
-            e.printStackTrace();
+        for (DataStorage.PlayerData data : allPlayers) {
+            topPlayersList.add(new TopPlayers(data.playerName(), data.uuid().toString(), data.playTime()));
         }
-        return topTen;
+
+        topPlayersList.sort(Comparator.comparingInt(e -> e.time));
+        Collections.reverse(topPlayersList);
+
+        return topPlayersList.stream()
+                .limit(10)
+                .toArray(TopPlayers[]::new);
     }
 
-    public static TopPlayers[] checkOnlinePlayers(TopPlayers[] top10) {
-        Chat chat = new Chat(plugin);
+
+    public static void checkOnlinePlayers(TopPlayers[] top10) {
+        Chat chat = new Chat(plugin, dataStorage);
         for (Player player : plugin.getServer().getOnlinePlayers())
             if (chat.ticksPlayed(player) > (top10.length == 0 ? 0 : top10[top10.length - 1].time)) {
                 TopPlayers top = new TopPlayers(player.getName(), player.getUniqueId().toString(),
@@ -156,109 +140,166 @@ public class PlaytimeCommands implements TabExecutor {
                             top10[i] = (top = temp);
                         }
             }
-        return top10;
+    }
+
+    private void sendChatMessages(CommandSender sender, @NotNull List<String> messages, Map<String, String> replacements) {
+        for (String message : messages) {
+            for (Map.Entry<String, String> entry : replacements.entrySet()) {
+                message = message.replace(entry.getKey(), entry.getValue());
+            }
+            Chat.message(sender, sender instanceof Player ? (Player) sender : null, message);
+        }
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
-            FileConfiguration c = PlaytimeCommands.config.getConfig();
-            if (cmd.getName().equalsIgnoreCase("playtime")) {
-                if (!(sender.hasPermission("playtime.check"))) {
-                    for (String noPermission : c.getStringList("messages.no_permission"))
-                        Chat.message(sender, player, noPermission);
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String commandLabel, String[] args) {
+        if (commandSender instanceof Player player) {
+            FileConfiguration config = PlaytimeCommands.config.getConfig();
+
+            if (command.getName().equalsIgnoreCase("playtime")) {
+                if (!player.hasPermission("playtime.check")) {
+                    sendNoPermissionMessage(commandSender, config);
                     return true;
                 }
-                if (args.length == 0) {
-                    for (String thisPlayer : c.getStringList("messages.player"))
-                        Chat.message(sender, player, thisPlayer);
-                } else {
-                    if (args[0].equals("reload")) {
-                        if (!(sender.hasPermission("playtime.reload"))) {
-                            for (String noPermission : c.getStringList("messages.no_permission"))
-                                Chat.message(sender, player, noPermission);
-                            return true;
-                        }
-                        for (String reloadConfig : c.getStringList("messages.reload_config"))
-                            Chat.message(sender, player, reloadConfig);
-                        PlaytimeCommands.config.reloadConfig();
-                    } else if (args[0].equals("uptime")) {
-                        if (!(sender.hasPermission("playtime.uptime"))) {
-                            for (String noPermission : c.getStringList("messages.no_permission"))
-                                Chat.message(sender, player, noPermission);
-                            return true;
-                        }
-                        for (String serverUptime : c.getStringList("messages.server_uptime"))
-                            Chat.message(sender, player, serverUptime);
-                    } else if (args[0].equals("top")) {
-                        if (!(sender.hasPermission("playtime.checktop"))) {
-                            for (String noPermission : c.getStringList("messages.no_permission"))
-                                Chat.message(sender, player, noPermission);
-                            return true;
-                        }
-                        TopPlayers[] top10;
-                        top10 = getTopTen();
-                        top10 = checkOnlinePlayers(top10);
-                        for (String header : c.getStringList("messages.playtimetop.header"))
-                            Chat.message(sender, player, header);
-                        for (int i = 0; i < top10.length; i++) {
-                            if (top10[i].time == 0) {
-                                break;
-                            }
-                            for (String message : c.getStringList("messages.playtimetop.message"))
-                                Chat.message(sender, player, message.replace("%position%", Integer.toString(i + 1))
-                                        .replace("%player%", top10[i].name).replace("%playtime%",
-                                                TimeFormat.getTime(Duration.of(top10[i].time, ChronoUnit.SECONDS))));
-                        }
-                        for (String footer : c.getStringList("messages.playtimetop.footer"))
-                            Chat.message(sender, player, footer);
 
-                    } else {
-                        if (!(sender.hasPermission("playtime.checkothers"))) {
-                            for (String noPermission : c.getStringList("messages.no_permission"))
-                                Chat.message(sender, player, noPermission);
-                            return true;
-                        }
-                        Player target = plugin.getServer().getPlayer(args[0]);
-                        if (target == null) {
-                            String storedTime = getPlayerTime(args[0]);
-                            String storedJoins = getPlayerJoins(args[0]);
-                            if (storedTime == null || storedJoins == null) {
-                                for (String notOnline : c.getStringList("messages.doesnt_exist"))
-                                    Chat.message(sender, target, notOnline.replace("%offlineplayer%", args[0]));
-                            } else {
-                                for (String offlinePlayers : c.getStringList("messages.offline_players"))
-                                    Chat.message(sender, target,
-                                            offlinePlayers.replace("%offlineplayer%", args[0])
-                                                    .replace("%offlinetime%",
-                                                            TimeFormat.getTime(Duration.of(Integer.valueOf(storedTime),
-                                                                    ChronoUnit.SECONDS)))
-                                                    .replace("%offlinetimesjoined%", storedJoins));
-                            }
-                        } else {
-                            for (String otherPlayer : c.getStringList("messages.other_players"))
-                                Chat.message(player, target, otherPlayer);
-                        }
-                    }
+                if (args.length == 0) {
+                    displayPlayerStats(commandSender, config);
+                    return true;
                 }
+
+                return switch (args[0].toLowerCase()) {
+                    case "reload" -> handleReloadCommand(player, config);
+                    case "uptime" -> handleUptimeCommand(player, config);
+                    case "top" -> handleTopCommand(player, config);
+                    default -> handleOtherPlayerStats(commandSender, player, args[0], config);
+                };
             }
-            return true;
         }
         return false;
     }
 
+    private void sendNoPermissionMessage(CommandSender commandSender, FileConfiguration config) {
+        if (commandSender instanceof Player player) {
+            for (String noPermission : config.getStringList("messages.no_permission")) {
+                Chat.message(commandSender, player, noPermission);
+            }
+        }
+    }
+
+    private void displayPlayerStats(CommandSender commandSender, FileConfiguration config) {
+        if (commandSender instanceof Player player) {
+            for (String thisPlayer : config.getStringList("messages.player")) {
+                Chat.message(commandSender, player, thisPlayer);
+            }
+        } else {
+            plugin.getLogger().warning("You cannot execute this command without specifying a player from the console.");
+        }
+    }
+
+    private boolean handleReloadCommand(@NotNull Player player, FileConfiguration config) {
+        if (!player.hasPermission("playtime.reload")) {
+            sendNoPermissionMessage(player, config);
+            return false;
+        }
+        for (String reloadConfig : config.getStringList("messages.reload_config")) {
+            Chat.message(player, player, reloadConfig);
+        }
+        PlaytimeCommands.config.reloadConfig();
+        return true;
+    }
+
+    private boolean handleUptimeCommand(@NotNull Player player, FileConfiguration config) {
+        if (!player.hasPermission("playtime.uptime")) {
+            sendNoPermissionMessage(player, config);
+            return false;
+        }
+        for (String serverUptime : config.getStringList("messages.server_uptime")) {
+            Chat.message(player, player, serverUptime);
+        }
+        return true;
+    }
+
+    private boolean handleTopCommand(@NotNull Player player, FileConfiguration config) {
+        if (!player.hasPermission("playtime.checktop")) {
+            sendNoPermissionMessage(player, config);
+            return false;
+        }
+
+        TopPlayers[] topTen = getTopTen();
+        checkOnlinePlayers(topTen);
+
+        for (String header : config.getStringList("messages.playtimetop.header")) {
+            Chat.message(player, player, header);
+        }
+
+        for (int i = 0; i < topTen.length; i++) {
+            if (topTen[i].time == 0) {
+                break;
+            }
+            for (String message : config.getStringList("messages.playtimetop.message")) {
+                Chat.message(player, player, message
+                        .replace("%position%", Integer.toString(i + 1))
+                        .replace("%player%", topTen[i].name)
+                        .replace("%playtime%", TimeFormat.getTime(Duration.of(topTen[i].time, ChronoUnit.SECONDS))));
+            }
+        }
+
+        for (String footer : config.getStringList("messages.playtimetop.footer")) {
+            Chat.message(player, player, footer);
+        }
+        return true;
+    }
+
+    private boolean handleOtherPlayerStats(CommandSender commandSender, @NotNull Player player, String targetName, FileConfiguration config) {
+        if (!player.hasPermission("playtime.checkothers")) {
+            sendNoPermissionMessage(player, config);
+            return false;
+        }
+
+        Player targetPlayer = plugin.getServer().getPlayer(targetName);
+        if (targetPlayer == null) {
+            String storedTime = getPlayerTime(targetName);
+            String storedJoins = getPlayerJoins(targetName);
+            if (storedTime == null || storedJoins == null) {
+                sendChatMessages(commandSender, config.getStringList("messages.doesnt_exist"),
+                        Map.of("%offlineplayer%", targetName));
+            } else {
+                sendChatMessages(commandSender, config.getStringList("messages.offline_players"),
+                        Map.of(
+                                "%offlineplayer%", targetName,
+                                "%offlinetime%", TimeFormat.getTime(Duration.of(Integer.parseInt(storedTime), ChronoUnit.SECONDS)),
+                                "%offlinetimesjoined%", storedJoins
+                        ));
+            }
+        } else {
+            sendChatMessages(player, config.getStringList("messages.other_players"),
+                    Map.of("%playtime_player%", targetPlayer.getName()));
+        }
+        return true;
+    }
+
     @Override
-    public List<String> onTabComplete(CommandSender commandSender, Command command, String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, String[] args) {
         List<String> tabComplete = new ArrayList<>();
-        tabComplete.add("reload");
-        tabComplete.add("uptime");
-        tabComplete.add("top");
-        for (Player p : plugin.getServer().getOnlinePlayers())
-            tabComplete.add(p.getName());
+
+        if (commandSender.hasPermission("playtime.reload")) {
+            tabComplete.add("reload");
+        }
+        if (commandSender.hasPermission("playtime.uptime")) {
+            tabComplete.add("uptime");
+        }
+        if (commandSender.hasPermission("playtime.checktop")) {
+            tabComplete.add("top");
+        }
+
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            tabComplete.add(player.getName());
+        }
+
         if (args.length == 1) {
             return StringUtil.copyPartialMatches(args[0], tabComplete, new ArrayList<>());
         }
+
         return null;
     }
 }
