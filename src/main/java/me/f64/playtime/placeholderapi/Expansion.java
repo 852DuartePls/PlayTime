@@ -10,8 +10,8 @@ import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import me.f64.playtime.commands.Playtime;
-import me.f64.playtime.Main;
+import me.f64.playtime.PlayTime;
+import me.f64.playtime.commands.PlaytimeCommands;
 import me.f64.playtime.utils.TimeFormat;
 import me.f64.playtime.utils.TopPlayers;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -23,11 +23,11 @@ import me.f64.playtime.utils.Chat;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 public class Expansion extends PlaceholderExpansion {
-    static Main plugin;
+    static PlayTime plugin;
     static Pattern topPlaceholder = Pattern.compile("top_([0-9]+)_(name|time)");
     Pattern positionPlaceholder = Pattern.compile("position_([_A-Za-z0-9]+)");
 
-    public Expansion(Main instance) {
+    public Expansion(PlayTime instance) {
         plugin = instance;
     }
 
@@ -57,9 +57,9 @@ public class Expansion extends PlaceholderExpansion {
     }
 
     public String get(int pos, String type) {
-        FileConfiguration c = Playtime.config.getConfig();
-        TopPlayers[] top10 = Playtime.getTopTen();
-        top10 = Playtime.checkOnlinePlayers(top10);
+        FileConfiguration c = PlaytimeCommands.config.getConfig();
+        TopPlayers[] top10 = PlaytimeCommands.getTopTen();
+        top10 = PlaytimeCommands.checkOnlinePlayers(top10);
         if (top10.length <= pos - 1)
             return type.equals("name") ? Chat.format(c.getString("placeholder.top.name"))
                     : Chat.format(c.getString("placeholder.top.time"));

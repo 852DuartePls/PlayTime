@@ -19,12 +19,12 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import me.f64.playtime.commands.Playtime;
+import me.f64.playtime.commands.PlaytimeCommands;
 import me.f64.playtime.placeholderapi.Expansion;
 import me.f64.playtime.utils.Chat;
 import me.f64.playtime.utils.UpdateChecker;
 
-public class Main extends JavaPlugin implements Listener {
+public class PlayTime extends JavaPlugin implements Listener {
     public static Plugin plugin;
     public String storagePath = getDataFolder() + "/data/";
 
@@ -33,7 +33,7 @@ public class Main extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         plugin = this;
-        getCommand("playtime").setExecutor(new Playtime(this));
+        getCommand("playtime").setExecutor(new PlaytimeCommands(this));
         checkStorage();
         placeholderAPI();
         updateChecker();
@@ -128,7 +128,7 @@ public class Main extends JavaPlugin implements Listener {
 
             if (player.get("lastName").equals(name)) {
                 Chat chat = new Chat(this);
-                final Player p = Main.plugin.getServer().getPlayer(name);
+                final Player p = PlayTime.plugin.getServer().getPlayer(name);
                 final int session = Integer.parseInt(player.get("session").toString());
                 final int current = chat.ticksPlayed(p);
                 return current - session;

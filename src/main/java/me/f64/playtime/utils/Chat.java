@@ -1,6 +1,6 @@
 package me.f64.playtime.utils;
 
-import me.f64.playtime.Main;
+import me.f64.playtime.PlayTime;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Statistic;
@@ -14,9 +14,9 @@ import org.json.simple.parser.JSONParser;
 import java.io.FileReader;
 
 public class Chat {
-    static Main plugin;
+    static PlayTime plugin;
 
-    public Chat(Main instance) {
+    public Chat(PlayTime instance) {
         plugin = instance;
     }
 

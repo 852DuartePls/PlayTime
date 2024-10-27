@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import me.f64.playtime.Main;
+import me.f64.playtime.PlayTime;
 import me.f64.playtime.utils.ConfigWrapper;
 import me.f64.playtime.utils.TimeFormat;
 import me.f64.playtime.utils.TopPlayers;
@@ -21,15 +21,15 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import me.f64.playtime.utils.Chat;
 
-public class Playtime implements TabExecutor {
-    static Main plugin;
+public class PlaytimeCommands implements TabExecutor {
+    static PlayTime plugin;
     public static ConfigWrapper config;
 
-    public Playtime(Main instance) {
+    public PlaytimeCommands(PlayTime instance) {
         plugin = instance;
-        Playtime.config = new ConfigWrapper(instance, null, "config.yml");
-        Playtime.config.createFile(null,
-                "Playtime By F64_Rx - Need Help? PM me on Spigot or post in the discussion.\r\n" + "\r\n"
+        PlaytimeCommands.config = new ConfigWrapper(instance, null, "config.yml");
+        PlaytimeCommands.config.createFile(null,
+                "PlaytimeCommands By F64_Rx - Need Help? PM me on Spigot or post in the discussion.\r\n" + "\r\n"
                         + " =================\r\n" + " | CONFIGURATION |\r\n" + " =================\r\n" + "\r\n"
                         + " available placeholders\r\n" + " %playtime_player% - returns the player name\r\n"
                         + " %offlineplayer% - returns the offline player name\r\n"
@@ -42,7 +42,7 @@ public class Playtime implements TabExecutor {
                         + " %playtime_top_#_name% - shows the name of the top 10\r\n"
                         + " %playtime_top_#_time% - shows the time of the top 10\r\n"
                         + " You can also use any other placeholder that PlaceholderAPI supports :) \r\n" + "");
-        FileConfiguration c = Playtime.config.getConfig();
+        FileConfiguration c = PlaytimeCommands.config.getConfig();
         c.addDefault("time.second.enabled", true);
         c.addDefault("time.second.prefix", "s");
         c.addDefault("time.minute.enabled", true);
@@ -72,7 +72,7 @@ public class Playtime implements TabExecutor {
         c.addDefault("placeholder.top.name", "none");
         c.addDefault("placeholder.top.time", "-");
         c.options().copyDefaults(true);
-        Playtime.config.saveConfig();
+        PlaytimeCommands.config.saveConfig();
     }
 
     public String getPlayerTime(String name) {
@@ -163,7 +163,7 @@ public class Playtime implements TabExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            FileConfiguration c = Playtime.config.getConfig();
+            FileConfiguration c = PlaytimeCommands.config.getConfig();
             if (cmd.getName().equalsIgnoreCase("playtime")) {
                 if (!(sender.hasPermission("playtime.check"))) {
                     for (String noPermission : c.getStringList("messages.no_permission"))
@@ -182,7 +182,7 @@ public class Playtime implements TabExecutor {
                         }
                         for (String reloadConfig : c.getStringList("messages.reload_config"))
                             Chat.message(sender, player, reloadConfig);
-                        Playtime.config.reloadConfig();
+                        PlaytimeCommands.config.reloadConfig();
                     } else if (args[0].equals("uptime")) {
                         if (!(sender.hasPermission("playtime.uptime"))) {
                             for (String noPermission : c.getStringList("messages.no_permission"))

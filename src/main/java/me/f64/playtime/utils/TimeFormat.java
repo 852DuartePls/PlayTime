@@ -7,11 +7,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
-import me.f64.playtime.commands.Playtime;
+import me.f64.playtime.commands.PlaytimeCommands;
 
 public class TimeFormat {
     public static String getTime(Duration duration) {
-        FileConfiguration c = Playtime.config.getConfig();
+        FileConfiguration c = PlaytimeCommands.config.getConfig();
         final StringBuilder builder = new StringBuilder();
         long sec = duration.getSeconds();
         long min = sec / 60, hour = min / 60, day = hour / 24, week = day / 7;

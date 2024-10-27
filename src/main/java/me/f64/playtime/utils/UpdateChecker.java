@@ -6,14 +6,14 @@ import java.net.URL;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
-import me.f64.playtime.Main;
+import me.f64.playtime.PlayTime;
 import org.bukkit.Bukkit;
 
 public class UpdateChecker {
-    static Main plugin;
+    static PlayTime plugin;
     public static int resourceId;
 
-    public UpdateChecker(Main instance, int resourceId) {
+    public UpdateChecker(PlayTime instance, int resourceId) {
         plugin = instance;
         UpdateChecker.resourceId = resourceId;
     }
