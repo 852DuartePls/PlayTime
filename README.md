@@ -6,7 +6,7 @@
 This project is a personal adaptation of the original PlayTime plugin and is not intended for public distribution.
 
 ---
-**Build process:**
+#### **Build process:**
 - Simply clone and execute the following commands in the terminal:
 
 ```
@@ -14,14 +14,15 @@ gradle wrapper
 gradlew build
 ```
 ---
-**Usage:**\
-*Requires **PlaceholderAPI** to be installed.*
-- Place the jar file in the plugins folder of your server.
-- Run the server.
-- Type `/playtime` in the console to see the plugin in action.
+
+#### **Requirements:**
+- Java 21
+- Any Bukkit based server startinf from 1.21
+- PlaceholderAPI
+- A permission plugin (optional)
 
 ---
-**Commands:**\
+#### **Commands:**
 **Alias:** `/timeplayed, /pt`
 - `/playtime` - Displays the plugin's stats.
 - `/playtime <player>` - Displays the stats of the specified player.
@@ -29,12 +30,12 @@ gradlew build
 - `/playtime uptime` - Displays the server's uptime.
 - `/playtime top` - Displays the top 10 players.
 ---
-**Permissions:**
+#### **Permissions:**
 - `playtime.check` - Allows the player to see the stats of other players.
 - `playtime.reload` - Allows the player to reload the config.
 - `playtime.uptime` - Allows the player to see the server's uptime.
 - `playtime.checktop` - Allows the player to see the top 10 players.
 - `playtime.checkothers` - Allows the player to see the stats of other players.
 ---
-**Config:**
+#### **Config:**
 - Please refer to the config.yml file for more information about the configuration and Placeholders
