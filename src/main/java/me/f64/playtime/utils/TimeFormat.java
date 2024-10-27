@@ -8,9 +8,10 @@ import java.util.concurrent.TimeUnit;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import me.f64.playtime.commands.PlaytimeCommands;
+import org.jetbrains.annotations.NotNull;
 
 public class TimeFormat {
-    public static String getTime(Duration duration) {
+    public static @NotNull String getTime(@NotNull Duration duration) {
         FileConfiguration c = PlaytimeCommands.config.getConfig();
         final StringBuilder builder = new StringBuilder();
         long sec = duration.getSeconds();
@@ -64,32 +65,32 @@ public class TimeFormat {
             }
         }
         if (fWeek > 0) {
-            builder.append(fWeek + Chat.format(c.getString("time.week.prefix")));
+            builder.append(fWeek).append(Chat.format(c.getString("time.week.prefix")));
         }
         if (fDay > 0) {
-            if (builder.length() > 0)
+            if (!builder.isEmpty())
                 builder.append(' ');
-            builder.append(fDay + Chat.format(c.getString("time.day.prefix")));
+            builder.append(fDay).append(Chat.format(c.getString("time.day.prefix")));
         }
         if (fHour > 0) {
-            if (builder.length() > 0)
+            if (!builder.isEmpty())
                 builder.append(' ');
-            builder.append(fHour + Chat.format(c.getString("time.hour.prefix")));
+            builder.append(fHour).append(Chat.format(c.getString("time.hour.prefix")));
         }
         if (fMin > 0) {
-            if (builder.length() > 0)
+            if (!builder.isEmpty())
                 builder.append(' ');
-            builder.append(fMin + Chat.format(c.getString("time.minute.prefix")));
+            builder.append(fMin).append(Chat.format(c.getString("time.minute.prefix")));
         }
         if (c.getBoolean("time.second.enabled") && fSec > 0) {
-            if (builder.length() > 0)
+            if (!builder.isEmpty())
                 builder.append(' ');
-            builder.append(fSec + Chat.format(c.getString("time.second.prefix")));
+            builder.append(fSec).append(Chat.format(c.getString("time.second.prefix")));
         }
         return builder.toString();
     }
 
-    public static String Uptime() {
+    public static @NotNull String Uptime() {
         return TimeFormat.getTime(Duration.of(
                 TimeUnit.MILLISECONDS.toSeconds(ManagementFactory.getRuntimeMXBean().getUptime()), ChronoUnit.SECONDS));
     }
