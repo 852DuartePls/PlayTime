@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 
+import me.f64.playtime.utils.DataStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
 import org.bukkit.command.PluginCommand;
@@ -16,9 +17,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import me.f64.playtime.commands.PlaytimeCommands;
 import me.f64.playtime.placeholderapi.Expansion;
@@ -26,7 +24,10 @@ import me.f64.playtime.utils.Chat;
 
 public class PlayTime extends JavaPlugin implements Listener {
     public static Plugin plugin;
-    public String storagePath = getDataFolder() + "/data/";
+    private DataStorage dataStorage;
+    public File pluginFolder = getDataFolder();
+    public File dataFolder = new File(pluginFolder, "data");
+    public File dbFile = new File(dataFolder, "players.db");
 
     public HashMap<String, Long> Sessions = new HashMap<>();
 
@@ -64,7 +65,6 @@ public class PlayTime extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    @SuppressWarnings("unchecked")
     public void onPlayerJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
         JSONObject target = new JSONObject();
@@ -134,43 +134,37 @@ public class PlayTime extends JavaPlugin implements Listener {
     }
 
     private void checkStorage() {
-        File pluginFolder = getDataFolder();
         if (!pluginFolder.exists()) {
-            pluginFolder.mkdirs();
-        }
-        File dataFolder = new File(getDataFolder() + "/data");
-
-        if (!dataFolder.exists()) {
-            dataFolder.mkdirs();
-        }
-
-        String legacyFilePath = getDataFolder() + "/userdata.json";
-        File userdataFile = new File(legacyFilePath);
-        if (userdataFile.exists()) {
-            JSONParser jsonParser = new JSONParser();
-            try {
-                FileReader reader = new FileReader(legacyFilePath);
-                JSONArray players = (JSONArray) jsonParser.parse(reader);
-                reader.close();
-                for (Object player : players) {
-                    JSONObject player_JSON = (JSONObject) player;
-                    writePlayer(player_JSON);
-                }
-
-                File newFileName = new File(getDataFolder() + "/userdata_old.json");
-
-                if (!newFileName.exists()) {
-                    userdataFile.renameTo(newFileName);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (pluginFolder.mkdirs()) {
+                this.getLogger().info("PlayTime folder created!");
+            } else {
+                this.getLogger().warning("Could not create PlayTime folder!");
             }
         }
 
+        if (!dataFolder.exists()) {
+            if (dataFolder.mkdirs()) {
+                this.getLogger().info("PlayTime data folder created!");
+            } else {
+                this.getLogger().warning("Could not create PlayTime data folder!");
+            }
+        }
+
+        if (!dbFile.exists()) {
+            try {
+                if (dbFile.createNewFile()) {
+                    this.getLogger().info("PlayTime data file created!");
+                } else {
+                    this.getLogger().warning("Could not create PlayTime data file!");
+                }
+            } catch (IOException e) {
+                this.getLogger().warning("Could not create PlayTime data for players!");
+            }
+        }
+
+        this.dataStorage = new DataStorage(this);
     }
 
-    @SuppressWarnings("unchecked")
     public void savePlayer(Player player) {
         JSONObject target = new JSONObject();
 
@@ -245,9 +239,5 @@ public class PlayTime extends JavaPlugin implements Listener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public String getPlayerPath(String name) {
-        return storagePath + name + ".json";
     }
 }
