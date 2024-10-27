@@ -2,6 +2,8 @@ package me.f64.playtime.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 
 import org.bukkit.configuration.file.FileConfiguration;
@@ -21,12 +23,12 @@ public class ConfigWrapper {
         this.fileName = fileName;
     }
 
-    public void createFile(String s, String h) {
+    public void createFile(String status, String configHeader) {
         reloadConfig();
         saveConfig();
-        loadConfig(h);
-        if (s != null) {
-            this.plugin.getLogger().info(s);
+        loadConfig(configHeader);
+        if (status != null) {
+            this.plugin.getLogger().info(status);
         }
     }
 
@@ -37,8 +39,9 @@ public class ConfigWrapper {
         return this.config;
     }
 
-    public void loadConfig(String h) {
-        this.config.options().header(h);
+    public void loadConfig(String configHeader) {
+        List<String> header = Collections.singletonList(configHeader);
+        this.config.options().setHeader(header);
         this.config.options().copyDefaults(true);
         saveConfig();
     }

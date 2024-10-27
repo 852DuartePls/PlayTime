@@ -8,63 +8,51 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
-import java.io.FileReader;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 public class Chat {
+    private final DataStorage dataStorage;
     static PlayTime plugin;
 
-    public Chat(PlayTime instance) {
+    public Chat(PlayTime instance, DataStorage dataStorage) {
+        this.dataStorage = dataStorage;
         plugin = instance;
     }
 
-    public static String format(String commandLabel) {
+    @Contract("_ -> new")
+    public static @NotNull String format(String commandLabel) {
         return ChatColor.translateAlternateColorCodes('&', commandLabel);
     }
 
-    public static String message(CommandSender sender, Player player, String commandLabel) {
+    public static void message(@NotNull CommandSender sender, Player player, String commandLabel) {
         sender.sendMessage(PlaceholderAPI.setPlaceholders(player, format(commandLabel)));
-        return commandLabel;
     }
 
-    public static String console(String commandLabel) {
+    public static void console(String commandLabel) {
         Bukkit.getConsoleSender().sendMessage(format(commandLabel));
-        return commandLabel;
     }
 
-    public int ticksPlayed(Player player) {
-        try {
-            JSONParser jsonParser = new JSONParser();
-            FileReader reader = new FileReader(plugin.getPlayerPath(player.getName()));
-            JSONObject playerJson = (JSONObject) jsonParser.parse(reader);
-            reader.close();
+    public int ticksPlayed(@NotNull Player player) {
+        DataStorage.PlayerData playerData = dataStorage.loadPlayerData(player.getUniqueId());
 
-            int sessionOnTime = (int) (System.currentTimeMillis()
-                    - plugin.Sessions.get(player.getUniqueId().toString())) / 1000;
+        long currentTime = System.currentTimeMillis();
+        long sessionStart = plugin.Sessions.getOrDefault(player.getUniqueId().toString(), currentTime);
+        int sessionOnTime = (int) ((currentTime - sessionStart) / 1000);
 
-            return Integer.parseInt(playerJson.get("time").toString()) + sessionOnTime;
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (!Compatibility.IS_LEGACY) {
-                return player.getStatistic(Statistic.valueOf("PLAY_ONE_MINUTE")) / 20;
-            }
-            return player.getStatistic(Statistic.valueOf("PLAY_ONE_TICK")) / 20;
+        if (playerData != null) {
+            return playerData.playTime() + sessionOnTime;
+        } else {
+            return player.getStatistic(Statistic.PLAY_ONE_MINUTE) / 20;
         }
     }
 
-    public int sessionsPlayed(Player player) {
-        try {
-            JSONParser jsonParser = new JSONParser();
-            FileReader reader = new FileReader(plugin.getPlayerPath(player.getName()));
-            JSONObject playerJson = (JSONObject) jsonParser.parse(reader);
-            reader.close();
+    public int sessionsPlayed(@NotNull Player player) {
+        DataStorage.PlayerData playerData = dataStorage.loadPlayerData(player.getUniqueId());
 
-            return Integer.parseInt(playerJson.get("joins").toString()) + 1;
-        } catch (Exception e) {
-            e.printStackTrace();
-
+        if (playerData != null) {
+            return playerData.joins();
+        } else {
             return player.getStatistic(Statistic.LEAVE_GAME) + 1;
         }
     }
