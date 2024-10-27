@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -33,7 +34,11 @@ public class PlayTime extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         plugin = this;
-        getCommand("playtime").setExecutor(new PlaytimeCommands(this));
+        PluginCommand command = getCommand("playtime");
+        if (command != null) {
+            command.setExecutor(new PlaytimeCommands(this));
+            command.setTabCompleter(new PlaytimeCommands(this));
+        }
         checkStorage();
         placeholderAPI();
         updateChecker();
