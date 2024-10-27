@@ -133,22 +133,6 @@ public class PlayTime extends JavaPlugin implements Listener {
         return 0;
     }
 
-    @EventHandler
-    public void onJoin(PlayerJoinEvent e) {
-        Player player = e.getPlayer();
-        if (e.getPlayer().getName().equals("itemnames")) {
-            new UpdateChecker(this, 26016).getVersion(version -> {
-                if (getDescription().getVersion().equalsIgnoreCase(version)) {
-                    Chat.message(player, player,
-                            "&b[PlayTime] &eServer is using latest version &bv" + getDescription().getVersion());
-                } else {
-                    Chat.message(player, player, "&b[PlayTime] &eServer is using &bv" + getDescription().getVersion()
-                            + " &eLatest version is &bv" + version);
-                }
-            });
-        }
-    }
-
     private void checkStorage() {
         File pluginFolder = getDataFolder();
         if (!pluginFolder.exists()) {
