@@ -36,7 +36,7 @@ public class PlaytimeCommands implements TabExecutor {
                 if (player.hasPermission("playtime.check")) {
                     displayPlayerStats(sender, config);
                 } else {
-                    sendPluginVersion(sender, config);
+                    sendPluginVersion(sender);
                 }
                 return true;
             }
@@ -48,20 +48,17 @@ public class PlaytimeCommands implements TabExecutor {
                 default -> handleOtherPlayerStats(sender, args[0], config, timeFormat);
             };
         } else {
-            sendPluginVersion(sender, config);
+            sendPluginVersion(sender);
         }
         return true;
     }
 
-    private void sendPluginVersion(CommandSender sender, FileConfiguration config) {
+    private void sendPluginVersion(CommandSender sender) {
+        String pluginVersion = "&3- Version: &f" + plugin.getDescription().getVersion();
         if (sender instanceof Player player) {
-            for (String pluginVersionMessage : config.getStringList("messages.plugin_version")) {
-                Chat.message(sender, player, pluginVersionMessage);
-            }
+            Chat.message(sender, player, pluginVersion);
         } else {
-            for (String pluginVersionMessage : config.getStringList("messages.plugin_version")) {
-                Chat.console(pluginVersionMessage);
-            }
+            Chat.console(pluginVersion);
         }
     }
 
