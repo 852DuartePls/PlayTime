@@ -38,7 +38,7 @@ public class Expansion extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getAuthor() {
-        return plugin.getDescription().getAuthors().toString();
+        return String.join(", ", plugin.getDescription().getAuthors());
     }
 
     @Override
@@ -52,74 +52,82 @@ public class Expansion extends PlaceholderExpansion {
     }
 
     @Override
-    public String onPlaceholderRequest(Player player, String commandLabel) {
+    public String onPlaceholderRequest(Player player, @NotNull String commandLabel) {
         Chat chat = new Chat(plugin, dataStorage);
-
         long ticksPlayed = chat.ticksPlayed(player);
-
-        if (commandLabel.equals("serveruptime")) {
-            return TimeFormat.Uptime();
-        }
-
         UUID playerUUID = player.getUniqueId();
 
-
-        if (commandLabel.equals("position")) {
-            DataStorage.PlayerData playerData = dataStorage.loadPlayerData(playerUUID);
-            List<DataStorage.PlayerData> allPlayers = dataStorage.loadAllPlayerData();
-
-            if (playerData != null) {
-                allPlayers.sort(Comparator.comparingInt(DataStorage.PlayerData::playTime).reversed());
-                int position = allPlayers.indexOf(playerData);
-                return String.valueOf(position + 1);
+        return switch (commandLabel) {
+            case "serveruptime" -> TimeFormat.Uptime();
+            case "position" -> getPlayerPosition(playerUUID);
+            case "player" -> player.getName();
+            case "time" -> formatDuration(ticksPlayed);
+            case "time_seconds" -> String.valueOf(convertTicksToSeconds(ticksPlayed));
+            case "time_minutes" -> String.valueOf(convertTicksToMinutes(ticksPlayed));
+            case "time_hours" -> String.valueOf(convertTicksToHours(ticksPlayed));
+            case "time_days" -> String.valueOf(convertTicksToDays(ticksPlayed));
+            case "time_weeks" -> String.valueOf(convertTicksToWeeks(ticksPlayed));
+            case "session" -> {
+                long sessionTime = Expansion.plugin.getPlayerSession(player);
+                yield formatDuration(sessionTime);
             }
-            return "Player not found";
+            case "timesjoined" -> String.valueOf(chat.sessionsPlayed(player));
+            default -> {
+                if (commandLabel.startsWith("top_")) {
+                    yield handleTopPlaceholder(commandLabel);
+                }
+                yield "";
+            }
+        };
+    }
+
+    private @NotNull String getPlayerPosition(UUID playerUUID) {
+        DataStorage.PlayerData playerData = dataStorage.loadPlayerData(playerUUID);
+        List<DataStorage.PlayerData> allPlayers = dataStorage.loadAllPlayerData();
+
+        if (playerData != null) {
+            allPlayers.sort(Comparator.comparingInt(DataStorage.PlayerData::playTime).reversed());
+            int position = allPlayers.indexOf(playerData);
+            return String.valueOf(position + 1);
         }
-        if (commandLabel.startsWith("top_")) {
-            Matcher matcher = topPlaceholder.matcher(commandLabel);
-            if (matcher.find()) {
+        return "Player not found";
+    }
+
+    private String handleTopPlaceholder(String commandLabel) {
+        Matcher matcher = topPlaceholder.matcher(commandLabel);
+        if (matcher.find()) {
+            try {
                 int pos = Integer.parseInt(matcher.group(1));
                 String type = matcher.group(2);
                 return get(String.valueOf(pos), type).toString();
+            } catch (NumberFormatException e) {
+                return "Invalid number";
             }
         }
+        return "";
+    }
 
-        switch (commandLabel) {
-            case "player" -> {
-                return player.getName();
-            }
-            case "time" -> {
-                return TimeFormat.getTime(Duration.of(ticksPlayed, ChronoUnit.SECONDS));
-            }
-            case "time_seconds" -> {
-                return String.valueOf(Duration.of(ticksPlayed, ChronoUnit.SECONDS).getSeconds());
-            }
-            case "time_minutes" -> {
-                long minutes = Duration.of(ticksPlayed, ChronoUnit.SECONDS).toMinutes();
-                return String.valueOf(minutes);
-            }
-            case "time_hours" -> {
-                long hours = Duration.of(ticksPlayed, ChronoUnit.SECONDS).toHours();
-                return String.valueOf(hours);
-            }
-            case "time_days" -> {
-                long days = Duration.of(ticksPlayed, ChronoUnit.SECONDS).toDays();
-                return String.valueOf(days);
-            }
-            case "time_weeks" -> {
-                long weeks = Duration.of(ticksPlayed, ChronoUnit.SECONDS).toDays() / 7;
-                return String.valueOf(weeks);
-            }
-            case "session" -> {
-                long sessionTime = Expansion.plugin.getPlayerSession(player);
-                return TimeFormat.getTime(Duration.of(sessionTime, ChronoUnit.SECONDS));
-            }
-            case "timesjoined" -> {
-                return String.valueOf(chat.sessionsPlayed(player));
-            }
-            default -> {
-                return "";
-            }
-        }
+    private @NotNull String formatDuration(long ticks) {
+        return TimeFormat.getTime(Duration.of(ticks, ChronoUnit.SECONDS));
+    }
+
+    private long convertTicksToSeconds(long ticks) {
+        return Duration.of(ticks, ChronoUnit.SECONDS).getSeconds();
+    }
+
+    private long convertTicksToMinutes(long ticks) {
+        return Duration.of(ticks, ChronoUnit.SECONDS).toMinutes();
+    }
+
+    private long convertTicksToHours(long ticks) {
+        return Duration.of(ticks, ChronoUnit.SECONDS).toHours();
+    }
+
+    private long convertTicksToDays(long ticks) {
+        return Duration.of(ticks, ChronoUnit.SECONDS).toDays();
+    }
+
+    private long convertTicksToWeeks(long ticks) {
+        return Duration.of(ticks, ChronoUnit.SECONDS).toDays() / 7;
     }
 }
