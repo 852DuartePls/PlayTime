@@ -1,6 +1,6 @@
 name: ${name}
 authors: [F64_Rx, DaveDuart]
-version: v${version}
+version: ${version}
 description: ${description}
 main: me.f64.playtime.PlayTime
 api-version: ${apiVersion}
