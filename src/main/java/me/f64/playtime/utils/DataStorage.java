@@ -27,7 +27,8 @@ public class DataStorage {
                     "playerName TEXT, " +
                     "time INTEGER, " +
                     "joins INTEGER, " +
-                    "session INTEGER)";
+                    "session INTEGER, " +
+                    "lastOnline INTEGER)";
             statement.execute(sql);
             plugin.getLogger().info("Database initialized successfully!");
         } catch (SQLException e) {
@@ -41,7 +42,7 @@ public class DataStorage {
     }
 
     public void savePlayerData(@NotNull Player player, int playTime, int joins, int session) {
-        String query = "INSERT OR REPLACE INTO players (uuid, playerName, time, joins, session) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT OR REPLACE INTO players (uuid, playerName, time, joins, session, lastOnline) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection connection = connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
@@ -50,6 +51,7 @@ public class DataStorage {
             statement.setInt(3, playTime);
             statement.setInt(4, joins);
             statement.setInt(5, session);
+            statement.setLong(6, System.currentTimeMillis() / 1000);
             statement.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().warning("Could not save player data: " + e);
@@ -69,8 +71,9 @@ public class DataStorage {
                 int playTime = resultSet.getInt("time");
                 int joins = resultSet.getInt("joins");
                 int session = resultSet.getInt("session");
+                long lastOnline = resultSet.getLong("lastOnline");
 
-                return new PlayerData(uuid, playerName, playTime, joins, session);
+                return new PlayerData(uuid, playerName, playTime, joins, session, lastOnline);
             }
         } catch (SQLException e) {
             plugin.getLogger().warning("Could not load player data: " + e);
@@ -91,8 +94,9 @@ public class DataStorage {
                 int playTime = resultSet.getInt("time");
                 int joins = resultSet.getInt("joins");
                 int session = resultSet.getInt("session");
+                long lastOnline = resultSet.getLong("lastOnline");
 
-                players.add(new PlayerData(uuid, playerName, playTime, joins, session));
+                players.add(new PlayerData(uuid, playerName, playTime, joins, session, lastOnline));
             }
         } catch (SQLException e) {
             plugin.getLogger().warning("Could not load all player data: " + e);
@@ -100,6 +104,23 @@ public class DataStorage {
         return players;
     }
 
-    public record PlayerData(UUID uuid, String playerName, int playTime, int joins, int session) {
+    public UUID getPlayerUUIDByName(String playerName) {
+        String query = "SELECT uuid FROM players WHERE playerName = ?";
+        try (Connection connection = connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, playerName);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return UUID.fromString(resultSet.getString("uuid"));
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().warning("Could not retrieve UUID for player " + playerName + ": " + e);
+        }
+        return null;
+    }
+
+    public record PlayerData(UUID uuid, String playerName, int playTime, int joins, int session, long lastOnline) {
     }
 }
