@@ -1,13 +1,12 @@
 package me.f64.playtime.utils;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.f64.playtime.PlayTime;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import me.clip.placeholderapi.PlaceholderAPI;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,8 +35,9 @@ public class Chat {
     public int ticksPlayed(@NotNull Player player) {
         DataStorage.PlayerData playerData = dataStorage.loadPlayerData(player.getUniqueId());
 
+        String playerUUID = player.getUniqueId().toString();
         long currentTime = System.currentTimeMillis();
-        long sessionStart = plugin.Sessions.getOrDefault(player.getUniqueId().toString(), currentTime);
+        long sessionStart = plugin.Sessions.getOrDefault(playerUUID, currentTime);
         int sessionOnTime = (int) ((currentTime - sessionStart) / 1000);
 
         if (playerData != null) {
