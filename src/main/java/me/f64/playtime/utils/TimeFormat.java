@@ -1,97 +1,45 @@
 package me.f64.playtime.utils;
 
+import me.f64.playtime.commands.PlaytimeCommands;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.management.ManagementFactory;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
-
-import org.bukkit.configuration.file.FileConfiguration;
-
-import me.f64.playtime.commands.PlaytimeCommands;
-import org.jetbrains.annotations.NotNull;
 
 public class TimeFormat {
     public static @NotNull String getTime(@NotNull Duration duration) {
-        FileConfiguration c = PlaytimeCommands.config.getConfig();
+        FileConfiguration config = PlaytimeCommands.config.getConfig();
         final StringBuilder builder = new StringBuilder();
-        long sec = duration.getSeconds();
-        long min = sec / 60, hour = min / 60, day = hour / 24, week = day / 7;
-        sec %= 60;
-        min %= 60;
-        hour %= 24;
-        day %= 7;
-        long fSec = sec, fMin = 0, fHour = 0, fDay = 0, fWeek = 0;
-        if (min > 0) {
-            if (c.getBoolean("time.minute.enabled")) {
-                fMin = min;
-            } else {
-                fSec += min * 60;
-            }
+
+        long seconds = duration.getSeconds();
+        long minutes = seconds / 60, hours = minutes / 60, days = hours / 24, weeks = days / 7;
+        seconds %= 60;
+        minutes %= 60;
+        hours %= 24;
+        days %= 7;
+
+        if (weeks > 0) appendUnit(builder, config, "time.week", weeks);
+        if (days > 0) appendUnit(builder, config, "time.day", days);
+        if (hours > 0) appendUnit(builder, config, "time.hour", hours);
+        if (minutes > 0) appendUnit(builder, config, "time.minute", minutes);
+        if (config.getBoolean("time.second.enabled") && seconds > 0) {
+            appendUnit(builder, config, "time.second", seconds);
         }
-        if (hour > 0) {
-            if (c.getBoolean("time.hour.enabled")) {
-                fHour = hour;
-            } else {
-                if (c.getBoolean("time.minute.enabled"))
-                    fMin += hour * 60;
-                else
-                    fSec += hour * 60 * 60;
-            }
-        }
-        if (day > 0) {
-            if (c.getBoolean("time.day.enabled")) {
-                fDay = day;
-            } else {
-                if (c.getBoolean("time.hour.enabled"))
-                    fHour += day * 24;
-                else if (c.getBoolean("time.minute.enabled"))
-                    fMin += day * 24 * 60;
-                else
-                    fSec += day * 24 * 60 * 60;
-            }
-        }
-        if (week > 0) {
-            if (c.getBoolean("time.week.enabled")) {
-                fWeek = week;
-            } else {
-                if (c.getBoolean("time.day.enabled"))
-                    fDay += week * 7;
-                else if (c.getBoolean("time.hour.enabled"))
-                    fHour += week * 7 * 24;
-                else if (c.getBoolean("time.minute.enabled"))
-                    fMin += week * 7 * 24 * 60;
-                else
-                    fSec += week * 7 * 24 * 60 * 60;
-            }
-        }
-        if (fWeek > 0) {
-            builder.append(fWeek).append(Chat.format(c.getString("time.week.prefix")));
-        }
-        if (fDay > 0) {
-            if (!builder.isEmpty())
-                builder.append(' ');
-            builder.append(fDay).append(Chat.format(c.getString("time.day.prefix")));
-        }
-        if (fHour > 0) {
-            if (!builder.isEmpty())
-                builder.append(' ');
-            builder.append(fHour).append(Chat.format(c.getString("time.hour.prefix")));
-        }
-        if (fMin > 0) {
-            if (!builder.isEmpty())
-                builder.append(' ');
-            builder.append(fMin).append(Chat.format(c.getString("time.minute.prefix")));
-        }
-        if (c.getBoolean("time.second.enabled") && fSec > 0) {
-            if (!builder.isEmpty())
-                builder.append(' ');
-            builder.append(fSec).append(Chat.format(c.getString("time.second.prefix")));
-        }
+
         return builder.toString();
     }
 
+    private static void appendUnit(StringBuilder builder, @NotNull FileConfiguration config, String path, long value) {
+        if (config.getBoolean(path + ".enabled")) {
+            if (!builder.isEmpty()) builder.append(' ');
+            builder.append(value).append(Chat.format(config.getString(path + ".prefix")));
+        }
+    }
+
     public static @NotNull String Uptime() {
-        return TimeFormat.getTime(Duration.of(
-                TimeUnit.MILLISECONDS.toSeconds(ManagementFactory.getRuntimeMXBean().getUptime()), ChronoUnit.SECONDS));
+        long uptimeSeconds = TimeUnit.MILLISECONDS.toSeconds(ManagementFactory.getRuntimeMXBean().getUptime());
+        return getTime(Duration.ofSeconds(uptimeSeconds));
     }
 }
