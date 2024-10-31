@@ -152,7 +152,7 @@ public class PlayTime extends JavaPlugin implements Listener {
             return;
         }
 
-        int sessionOnTime = (int) (System.currentTimeMillis() - Sessions.get(uuid)) / 1000; // in seconds
+        int sessionOnTime = (int) (System.currentTimeMillis() - Sessions.get(uuid)) / 1000;
         Sessions.remove(uuid);
 
         DataStorage.PlayerData playerData = dataStorage.loadPlayerData(player.getUniqueId());
