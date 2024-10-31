@@ -1,6 +1,5 @@
 package me.f64.playtime.utils;
 
-import me.f64.playtime.commands.PlaytimeCommands;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,8 +8,13 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 public class TimeFormat {
-    public static @NotNull String getTime(@NotNull Duration duration) {
-        FileConfiguration config = PlaytimeCommands.config.getConfig();
+    private final FileConfiguration config;
+
+    public TimeFormat(@NotNull FileConfiguration config) {
+        this.config = config;
+    }
+
+    public @NotNull String getTime(@NotNull Duration duration) {
         final StringBuilder builder = new StringBuilder();
 
         long seconds = duration.getSeconds();
@@ -20,25 +24,25 @@ public class TimeFormat {
         hours %= 24;
         days %= 7;
 
-        if (weeks > 0) appendUnit(builder, config, "time.week", weeks);
-        if (days > 0) appendUnit(builder, config, "time.day", days);
-        if (hours > 0) appendUnit(builder, config, "time.hour", hours);
-        if (minutes > 0) appendUnit(builder, config, "time.minute", minutes);
+        if (weeks > 0) appendUnit(builder, "time.week", weeks);
+        if (days > 0) appendUnit(builder, "time.day", days);
+        if (hours > 0) appendUnit(builder, "time.hour", hours);
+        if (minutes > 0) appendUnit(builder, "time.minute", minutes);
         if (config.getBoolean("time.second.enabled") && seconds > 0) {
-            appendUnit(builder, config, "time.second", seconds);
+            appendUnit(builder, "time.second", seconds);
         }
 
         return builder.toString();
     }
 
-    private static void appendUnit(StringBuilder builder, @NotNull FileConfiguration config, String path, long value) {
+    private void appendUnit(StringBuilder builder, String path, long value) {
         if (config.getBoolean(path + ".enabled")) {
             if (!builder.isEmpty()) builder.append(' ');
             builder.append(value).append(Chat.format(config.getString(path + ".prefix")));
         }
     }
 
-    public static @NotNull String Uptime() {
+    public @NotNull String Uptime() {
         long uptimeSeconds = TimeUnit.MILLISECONDS.toSeconds(ManagementFactory.getRuntimeMXBean().getUptime());
         return getTime(Duration.ofSeconds(uptimeSeconds));
     }

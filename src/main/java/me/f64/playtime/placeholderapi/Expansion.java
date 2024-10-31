@@ -19,11 +19,13 @@ import java.util.regex.Pattern;
 public class Expansion extends PlaceholderExpansion {
     private static PlayTime plugin;
     private final DataStorage dataStorage;
+    private final TimeFormat timeFormat;
     static Pattern topPlaceholder = Pattern.compile("top_([0-9]+)_(name|time)");
 
     public Expansion(PlayTime instance, DataStorage dataStorage) {
         plugin = instance;
         this.dataStorage = dataStorage;
+        this.timeFormat = new TimeFormat(plugin.getConfig());
     }
 
     @Override
@@ -58,7 +60,7 @@ public class Expansion extends PlaceholderExpansion {
         UUID playerUUID = player.getUniqueId();
 
         return switch (commandLabel) {
-            case "serveruptime" -> TimeFormat.Uptime();
+            case "serveruptime" -> timeFormat.Uptime();
             case "position" -> getPlayerPosition(playerUUID);
             case "player" -> player.getName();
             case "time" -> formatDuration(ticksPlayed);
@@ -108,7 +110,7 @@ public class Expansion extends PlaceholderExpansion {
     }
 
     private @NotNull String formatDuration(long ticks) {
-        return TimeFormat.getTime(Duration.of(ticks, ChronoUnit.SECONDS));
+        return timeFormat.getTime(Duration.of(ticks, ChronoUnit.SECONDS));
     }
 
     private long convertTicksToSeconds(long ticks) {
