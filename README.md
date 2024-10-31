@@ -17,7 +17,7 @@ gradlew build
 
 #### **Requirements:**
 - Java 21
-- Any Bukkit based server startinf from 1.21
+- Any Bukkit based server starting from 1.21 and above
 - PlaceholderAPI
 - A permission plugin (optional)
 
