@@ -34,14 +34,13 @@ public class PlayTime extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         plugin = this;
-        dataStorage = new DataStorage(this);
+        checkStorage();
         chat = new Chat(this, dataStorage);
         PluginCommand command = getCommand("playtime");
         if (command != null) {
             command.setExecutor(new PlaytimeCommands(this, dataStorage));
             command.setTabCompleter(new PlaytimeCommands(this, dataStorage));
         }
-        checkStorage();
         placeholderAPI();
     }
 

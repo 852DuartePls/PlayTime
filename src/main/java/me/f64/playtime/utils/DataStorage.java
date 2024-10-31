@@ -30,10 +30,9 @@ public class DataStorage {
                     "session INTEGER, " +
                     "lastOnline INTEGER)";
             statement.execute(sql);
-            plugin.getLogger().info("Database initialized successfully!");
+            plugin.getLogger().info("Local player data file initialized successfully!");
         } catch (SQLException e) {
-            plugin.getLogger().warning("Could not initialize database: " + e
-                    + " -- If this the first time running this plugin, you can ignore this warning! :)");
+            plugin.getLogger().warning("Could not initialize database: " + e);
         }
     }
 
