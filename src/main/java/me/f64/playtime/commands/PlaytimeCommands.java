@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -34,9 +35,9 @@ public class PlaytimeCommands implements TabExecutor {
         if (sender instanceof Player player) {
             if (args.length == 0) {
                 if (player.hasPermission("playtime.check")) {
-                    displayPlayerStats(sender, config);
+                    displayPlayerStats(sender, player, config);
                 } else {
-                    sendPluginVersion(sender);
+                    sendPluginVersion(sender, config);
                 }
                 return true;
             }
@@ -48,17 +49,20 @@ public class PlaytimeCommands implements TabExecutor {
                 default -> handleOtherPlayerStats(sender, args[0], config, timeFormat);
             };
         } else {
-            sendPluginVersion(sender);
+            sendPluginVersion(sender, config);
         }
         return true;
     }
 
-    private void sendPluginVersion(CommandSender sender) {
-        String pluginVersion = "&3- Version: &f" + plugin.getDescription().getVersion();
+    private void sendPluginVersion(CommandSender sender, FileConfiguration config) {
         if (sender instanceof Player player) {
-            Chat.message(sender, player, pluginVersion);
+            for (String pluginVersionMessage : config.getStringList("messages.plugin_version")) {
+                Chat.message(sender, player, pluginVersionMessage);
+            }
         } else {
-            Chat.console(pluginVersion);
+            for (String pluginVersionMessage : config.getStringList("messages.plugin_version")) {
+                Chat.console(pluginVersionMessage);
+            }
         }
     }
 
@@ -70,15 +74,9 @@ public class PlaytimeCommands implements TabExecutor {
         }
     }
 
-    private void displayPlayerStats(CommandSender commandSender, FileConfiguration config) {
-        if (commandSender instanceof Player player) {
-            for (String thisPlayer : config.getStringList("messages.player")) {
-                Chat.message(commandSender, player, thisPlayer);
-            }
-        } else {
-            for (String thisPlayer : config.getStringList("messages.player")) {
-                Chat.console(thisPlayer);
-            }
+    private void displayPlayerStats(CommandSender commandSender, Player player, @NotNull FileConfiguration config) {
+        for (String thisPlayer : config.getStringList("messages.player")) {
+            Chat.message(commandSender, player, thisPlayer);
         }
     }
 
@@ -162,18 +160,22 @@ public class PlaytimeCommands implements TabExecutor {
 
         Player targetPlayer = plugin.getServer().getPlayer(targetName);
         if (targetPlayer == null) {
-            String storedTime = getPlayerTime(targetName);
-            String storedJoins = getPlayerJoins(targetName);
-            if (storedTime == null || storedJoins == null) {
-                sendChatMessages(sender, config.getStringList("messages.doesnt_exist"),
-                        Map.of("%offlineplayer%", targetName));
-            } else {
+            UUID targetUUID = dataStorage.getPlayerUUIDByName(targetName);
+            if (targetUUID != null) {
+                String storedTime = getPlayerTime(targetUUID.toString());
+                String storedJoins = getPlayerJoins(targetUUID.toString());
+                long lastOnline = dataStorage.loadPlayerData(targetUUID).lastOnline();
+
                 sendChatMessages(sender, config.getStringList("messages.offline_players"),
                         Map.of(
                                 "%offlineplayer%", targetName,
                                 "%offlinetime%", timeFormat.getTime(Duration.of(Integer.parseInt(storedTime), ChronoUnit.SECONDS)),
-                                "%offlinetimesjoined%", storedJoins
+                                "%offlinetimesjoined%", storedJoins,
+                                "%lastonline%", new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(new Date(lastOnline * 1000))
                         ));
+            } else {
+                sendChatMessages(sender, config.getStringList("messages.doesnt_exist"),
+                        Map.of("%offlineplayer%", targetName));
             }
         } else {
             sendChatMessages(sender, config.getStringList("messages.other_players"),
@@ -268,7 +270,6 @@ public class PlaytimeCommands implements TabExecutor {
                 .limit(10)
                 .toArray(TopPlayers[]::new);
     }
-
 
     public static void checkOnlinePlayers(TopPlayers[] top10) {
         Chat chat = new Chat(plugin, dataStorage);
