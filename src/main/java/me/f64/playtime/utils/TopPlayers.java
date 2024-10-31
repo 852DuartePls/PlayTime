@@ -5,10 +5,6 @@ public class TopPlayers {
     public String uuid;
     public Integer time;
 
-    public TopPlayers() {
-        time = 0;
-    }
-
     public TopPlayers(String name, String uuid, int time) {
         this.name = name;
         this.uuid = uuid;
