@@ -6,10 +6,12 @@ import org.bukkit.configuration.file.FileConfiguration;
 import java.util.List;
 
 public class ConfigHandler {
+    private final PlayTime plugin;
     private final ConfigWrapper config;
 
-    public ConfigHandler(PlayTime instance) {
-        this.config = new ConfigWrapper(instance, null, "config.yml");
+    public ConfigHandler(PlayTime plugin) {
+        this.plugin = plugin;
+        this.config = new ConfigWrapper(plugin, null, "config.yml");
         createFile();
     }
 
@@ -35,7 +37,6 @@ public class ConfigHandler {
         setDefaults();
     }
 
-
     private void setDefaults() {
         FileConfiguration fileConfig = config.getConfig();
         fileConfig.addDefault("time.second.enabled", true);
@@ -48,11 +49,11 @@ public class ConfigHandler {
         fileConfig.addDefault("time.day.prefix", "d");
         fileConfig.addDefault("time.week.enabled", true);
         fileConfig.addDefault("time.week.prefix", "w");
-        fileConfig.addDefault("messages.plugin_version", List.of("&8[&bPlayTime&8] &bVersion: &7" + config.getConfig().getString("plugin_version")));
+        fileConfig.addDefault("messages.plugin_version", List.of("&8[&bPlayTime&8] &bVersion: &7" + plugin.getDescription().getVersion()));
         fileConfig.addDefault("messages.no_permission", List.of("&8[&bPlayTime&8] &cYou don't have permission."));
-        fileConfig.addDefault("messages.doesnt_exist", List.of("&8[&bPlayTime&8] &cPlayer %offlineplayer% has not joined before!"));
+        fileConfig.addDefault("messages.doesnt_exist", List.of("&8[&bPlayTime&8] &cPlayer %offlineplayer% has never joined before!"));
         fileConfig.addDefault("messages.player", List.of("&b%playtime_player%'s Stats are:", "&bPlayTime: &7%playtime_time%", "&bTimes Joined: &7%playtime_timesjoined%"));
-        fileConfig.addDefault("messages.offline_players", List.of("&b%offlineplayer%'s Stats are:", "&bPlayTime: &7%offlinetime%", "&bTimes Joined: &7%offlinetimesjoined%"));
+        fileConfig.addDefault("messages.offline_players", List.of("&b%offlineplayer%'s Stats are:", "&bPlayTime: &7%offlinetime%", "&bTimes Joined: &7%offlinetimesjoined%", "&bLast Online: &7%lastonline%"));
         fileConfig.addDefault("messages.other_players", List.of("&b%playtime_player%'s Stats are:", "&bPlayTime: &7%playtime_time%", "&bTimes Joined: &7%playtime_timesjoined%"));
         fileConfig.addDefault("messages.playtimetop.header", List.of("&bTop &e10 &bplayers playtime:", ""));
         fileConfig.addDefault("messages.playtimetop.message", List.of("&a%position%. &b%player%: &e%playtime%"));
